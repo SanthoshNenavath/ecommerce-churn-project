@@ -1,8 +1,12 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-import joblib
 import numpy as np
+import pandas as pd
 from pathlib import Path
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
 
 # -------------------------------------------------
 # App initialization
@@ -14,17 +18,32 @@ app = FastAPI(
 )
 
 # -------------------------------------------------
-# Paths
+# Load & train model ON STARTUP
 # -------------------------------------------------
 ROOT = Path(__file__).resolve().parents[1]
-MODEL_PATH = ROOT / "models" / "churn_logistic_model.pkl"
-SCALER_PATH = ROOT / "models" / "scaler.pkl"
+DATA_PATH = ROOT / "data" / "processed" / "rfm_with_churn.csv"
 
-# -------------------------------------------------
-# Load model and scaler
-# -------------------------------------------------
-model = joblib.load(MODEL_PATH)
-scaler = joblib.load(SCALER_PATH)
+# Load data
+df = pd.read_csv(DATA_PATH)
+
+X = df[["Frequency", "Monetary"]]
+y = df["Churn"]
+
+# Train-test split
+X_train, _, y_train, _ = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+# Scale
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+
+# Train model
+model = LogisticRegression(
+    max_iter=1000,
+    class_weight="balanced"
+)
+model.fit(X_train_scaled, y_train)
 
 # -------------------------------------------------
 # Request schema
@@ -38,25 +57,15 @@ class CustomerInput(BaseModel):
 # -------------------------------------------------
 @app.post("/predict")
 def predict_churn(data: CustomerInput):
-    """
-    Predict churn probability and decision.
-    """
-    # Prepare input
     X = np.array([[data.frequency, data.monetary]])
-
-    # Scale
     X_scaled = scaler.transform(X)
 
-    # Predict probability
     churn_proba = model.predict_proba(X_scaled)[0][1]
-
-    # Decision threshold (locked)
     threshold = 0.5
-    churn_label = int(churn_proba >= threshold)
 
     return {
         "churn_probability": round(float(churn_proba), 4),
-        "churn_prediction": "YES" if churn_label == 1 else "NO",
+        "churn_prediction": "YES" if churn_proba >= threshold else "NO",
         "threshold_used": threshold
     }
 
