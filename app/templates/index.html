@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>E-Commerce Churn Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            padding: 40px;
+        }
+        .container {
+            max-width: 650px;
+            margin: auto;
+            background: white;
+            padding: 35px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        h2 {
+            text-align: center;
+            color: #555;
+            font-weight: normal;
+            margin-top: 0;
+        }
+        .quote {
+            text-align: center;
+            font-style: italic;
+            color: #555;
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+        hr {
+            margin: 25px 0;
+            border: none;
+            border-top: 1px solid #ddd;
+        }
+        label {
+            font-weight: bold;
+            color: #333;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0 20px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #eef6ff;
+            border-radius: 6px;
+        }
+        .yes {
+            color: #c0392b;
+            font-weight: bold;
+        }
+        .no {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #777;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>E-Commerce Churn Prediction</h1>
+    <h2>By <strong>SANTHOSH NENAVATH</strong></h2>
+
+    <div class="quote">
+        “Retention is cheaper than acquisition — data tells us who to save.”
+    </div>
+
+    <div class="quote">
+        “Good models predict outcomes. Great models drive decisions.”
+    </div>
+
+    <hr>
+
+    <form method="post" action="/predict">
+        <label>Frequency (number of purchases)</label>
+        <input type="number" name="frequency" placeholder="e.g. 2" required>
+
+        <label>Monetary (total amount spent)</label>
+        <input type="number" step="0.01" name="monetary" placeholder="e.g. 500.00" required>
+
+        <button type="submit">Predict Churn</button>
+    </form>
+
+    {% if result %}
+    <div class="result">
+        <p><strong>Input Summary</strong></p>
+        <p>Frequency: {{ result.frequency }}</p>
+        <p>Monetary: {{ result.monetary }}</p>
+
+        <hr>
+
+        <p><strong>Churn Probability:</strong> {{ result.probability }}</p>
+        <p><strong>Churn Prediction:</strong>
+            {% if result.decision == "YES" %}
+                <span class="yes">YES</span>
+            {% else %}
+                <span class="no">NO</span>
+            {% endif %}
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+<footer>
+    End-to-End Machine Learning Project • FastAPI • Logistic Regression
+</footer>
+
+</body>
+</html>
